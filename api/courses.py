@@ -1,25 +1,24 @@
 import fastapi
-from typing import Optional
-from pydantic import BaseModel
+from typing import List
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+from pydantic_schemas.course_control import Course, CourseCreate
+from api.utils.courses import get_course, get_courses, create_course
 router= fastapi.APIRouter()
 
-courses= []
 
-class Course(BaseModel):
-    Subject:str
-    bio:Optional[str]
-
-@router.get("/courses")
-async def get_courses():
+@router.get("/courses", response_model=List[Course])
+async def read_courses(db: Session = Depends(get_db)):
+    courses = get_courses(db=db)
     return courses
 
 @router.post("/courses")
-async def create_course(course:Course):
+async def create_new_course(course:Course):
     courses.append(course)
     return "Successfully added new course"
 
 @router.get("/courses/{id}")
-async def get_course(id: int):
+async def read_course(id: int):
     return {"user":courses[id]}
 
 @router.patch("/courses/{id}")
